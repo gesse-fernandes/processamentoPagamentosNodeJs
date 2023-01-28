@@ -51,7 +51,7 @@ app.get('/redirectProcessPayment', async (req, res) => {
         }
       ],
       mode: 'payment',
-      success_url: `http://localhost:5000?sucess`,
+      success_url: `http://localhost:5000/sucesso?token={CHECKOUT_SESSION_ID}`,
       cancel_url: `http://localhost:5000?falha`,
     });
   
@@ -59,7 +59,29 @@ app.get('/redirectProcessPayment', async (req, res) => {
   });
 
 
+app.get('/sucesso/',async (req, res) =>{
+    if(req.query.token != null){
+        try {
+            
+        
+    const session = await stripe.checkout.sessions.retrieve(
+        req.query.token
+    )
+    
+    if(session.payment_status == 'paid'){
+        //liberar os products ou o  serviço que você está liberando.
+        res.send("PAGO");
+    }else{
+        res.send("Nao foi pago");
+    }
+} catch (e) {
+            res.send("Falhou");  
+}
 
+}else{
+    res.send("Precisamos do token");
+}
+});
 app.listen(port,()=>{
     console.log("http://localhost:5000");
     console.log('Uhul! server rodando ;)');
