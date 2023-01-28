@@ -3,7 +3,8 @@ const express = require('express');
 const fs = ('fs');
 
 const path = require('path');
-
+require('dotenv/config'); 
+const stripe = require('stripe')(process.env.SECRET_API);
 
 
 const port = 5000;
@@ -27,6 +28,35 @@ app.get('/',(req,res)=>{
     res.render('index');
 
 });
+
+app.get('/redirectProcessPayment', async (req, res) => {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types:['card'],
+      line_items: [
+       /* {
+          
+          // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+          price: '2000',
+          quantity: 1,
+        },*/
+        {
+            price_data:{
+                currency:'brl',
+                product_data:{
+                   name: 'IntelSust',
+                },
+                unit_amount:2000
+            },
+            quantity: 1
+        }
+      ],
+      mode: 'payment',
+      success_url: `http://localhost:5000?sucess`,
+      cancel_url: `http://localhost:5000?falha`,
+    });
+  
+    res.redirect(303, session.url);
+  });
 
 
 
